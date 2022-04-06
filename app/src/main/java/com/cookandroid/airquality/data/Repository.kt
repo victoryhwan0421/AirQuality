@@ -1,6 +1,7 @@
 package com.cookandroid.airquality.data
 
 import com.cookandroid.airquality.BuildConfig
+import com.cookandroid.airquality.data.models.airquality.MeasuredValue
 import com.cookandroid.airquality.data.models.monitoringstations.MonitoringStation
 import com.cookandroid.airquality.data.services.AirKoreaApiService
 import com.cookandroid.airquality.data.services.KakaoLocalApiService
@@ -12,7 +13,7 @@ import retrofit2.create
 
 object Repository {
 
-    // 안드로이드에서 경-위도를 받아서 인자로 넘겨줌
+    // 안드로이드에서 경-위도를 받아서 인자로 넘겨줌(호출부)
     suspend fun getNearbyMonitoringStation(latitude: Double, longitude: Double): MonitoringStation? {
         // 카카오 로컬 api 호출
         val tmCoordinates = kakaoLocalApiService.getTmCoordinates(longitude, latitude)
@@ -37,6 +38,20 @@ object Repository {
             // 그러므로 가장 가까운 관측소 하나를 받아올 수 있게 됨
             ?.minByOrNull { it.tm ?: Double.MAX_VALUE }
     }
+
+
+    // 호출부
+    // returnTytpe = MeasuredValue
+    suspend fun getLatestAirQualityData(stationName: String): MeasuredValue? =
+        airKoreaApiService
+            .getRealtimeAirQualities(stationName)
+            .body()
+            ?.response
+            ?.body
+            ?.measuredValues
+            ?.firstOrNull() // 만약에 데이터가 없다면 null 반환
+
+
 
     private val kakaoLocalApiService: KakaoLocalApiService by lazy {
         Retrofit.Builder()

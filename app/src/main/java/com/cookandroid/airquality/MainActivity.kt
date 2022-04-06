@@ -94,7 +94,12 @@ class MainActivity : AppCompatActivity() {
 
                 // 관측소를 잘 불러오는지 확인!
                 // Optinal이므로 monitoringStation?. 로 safe_call 로 부르기
-                binding.textView.text = monitoringStation?.stationName
+                // binding.textView.text = monitoringStation?.stationName
+
+                val measuredValue =
+                    Repository.getLatestAirQualityData(monitoringStation!!.stationName!!)
+
+                binding.textView.text = measuredValue.toString()
             }
            // binding.textView.text = "${location.latitude}, ${location.longitude}"
         }
