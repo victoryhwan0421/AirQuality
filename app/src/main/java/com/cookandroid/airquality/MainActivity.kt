@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
+import com.cookandroid.airquality.data.Repository
 import com.cookandroid.airquality.databinding.ActivityMainBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
@@ -88,9 +89,14 @@ class MainActivity : AppCompatActivity() {
             cancellationTokenSource!!.token
         ).addOnSuccessListener { location ->
             scope.launch {
+                val monitoringStation =
+                    Repository.getNearbyMonitoringStation(location.latitude, location.longitude)
 
+                // 관측소를 잘 불러오는지 확인!
+                // Optinal이므로 monitoringStation?. 로 safe_call 로 부르기
+                binding.textView.text = monitoringStation?.stationName
             }
-            binding.textView.text = "${location.latitude}, ${location.longitude}"
+           // binding.textView.text = "${location.latitude}, ${location.longitude}"
         }
     }
 

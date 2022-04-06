@@ -1,5 +1,11 @@
 package com.cookandroid.airquality.data
 
 object Url {
-    const val KAKAO_API_BASE_URL = "https://dapi.kakao.com/" // Request URL 참고
+    // Request URL 참고
+    const val KAKAO_API_BASE_URL = "https://dapi.kakao.com/"
+
+    // 웹브라우저 작업 시 http 허용하지 않기에 Manifest에서
+    // android:usesCleartextTraffic="true" 와
+    // <uses-permission android:name="android.permission.INTERNET"/> 추가하기
+    const val AIR_KOREA_API_BASE_URL = "http://apis.data.go.kr/"
 }
