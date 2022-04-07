@@ -7,6 +7,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import com.cookandroid.airquality.data.Repository
+import com.cookandroid.airquality.data.models.airquality.Grade
+import com.cookandroid.airquality.data.models.airquality.MeasuredValue
+import com.cookandroid.airquality.data.models.monitoringstations.MonitoringStation
 import com.cookandroid.airquality.databinding.ActivityMainBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
@@ -99,9 +102,58 @@ class MainActivity : AppCompatActivity() {
                 val measuredValue =
                     Repository.getLatestAirQualityData(monitoringStation!!.stationName!!)
 
-                binding.textView.text = measuredValue.toString()
+                //binding.textView.text = measuredValue.toString()
+                displayAirQualityData(monitoringStation, measuredValue!!)
             }
            // binding.textView.text = "${location.latitude}, ${location.longitude}"
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun displayAirQualityData(monitoringStation: MonitoringStation, measuredValue: MeasuredValue) {
+        binding.measuringStationNameTextView.text = monitoringStation.stationName
+        binding.measuringStationAddressTextView.text = monitoringStation.addr
+
+        // measuredValue 의 통합지수가 null 일 경우 UNKNOWN 으로 예외처리하고
+        // 그 외에는 정상 출력
+        (measuredValue.khaiGrade ?: Grade.UNKNOWN).let { grade ->
+            binding.root.setBackgroundResource(grade.colorsResId)
+            binding.totalGradeLabelTextView.text = grade.label
+            binding.totalGradeEmojiTextView.text = grade.emoji
+        }
+
+        // 미세먼지, 초미세먼지 랜더링
+        // 계속해서 각각의 항목들 보여주기 위해서 measuredValue에 계속 접근해야함
+        with(measuredValue){
+            binding.fineDustInformationTextView.text =
+                "미세먼지: $pm10Value ㎍/㎥ ${(pm10Grade ?: Grade.UNKNOWN).emoji}"
+
+            binding.ultrafineDustInformationTextView.text =
+                "초미세먼지: $pm25Value ㎍/㎥ ${(pm25Grade ?: Grade.UNKNOWN).emoji}"
+
+            with(binding.so2Item) {
+                labelTextView.text = "아황산가스"
+                gradeTextView.text = (so2Grade ?: Grade.UNKNOWN).toString()
+                valueTextView.text = "$so2Value ppm"
+            }
+
+            with(binding.co2Item) {
+                labelTextView.text = "일산화탄소"
+                gradeTextView.text = (coGrade ?: Grade.UNKNOWN).toString()
+                valueTextView.text = "$coValue ppm"
+            }
+
+            with(binding.o3Item) {
+                labelTextView.text = "오존"
+                gradeTextView.text = (o3Grade ?: Grade.UNKNOWN).toString()
+                valueTextView.text = "$o3Value ppm"
+            }
+
+            with(binding.no2Item) {
+                labelTextView.text = "이산화질소"
+                gradeTextView.text = (no2Grade ?: Grade.UNKNOWN).toString()
+                valueTextView.text = "$no2Value ppm"
+            }
         }
     }
 
