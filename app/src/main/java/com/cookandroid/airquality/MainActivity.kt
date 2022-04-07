@@ -3,9 +3,11 @@ package com.cookandroid.airquality
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.cookandroid.airquality.data.Repository
 import com.cookandroid.airquality.data.models.airquality.Grade
@@ -59,11 +61,26 @@ class MainActivity : AppCompatActivity() {
             requestCode == REQUEST_ACCESS_LOCATION_PERMISSIONS &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED
 
-        if(!locationPermissionGranted){
-            finish()
+        val backgroundLocationPermissionGranted =
+            requestCode == REQUEST_BACKGROUND_ACCESS_LOCATION_PERMISSIONS &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // background 권한이 없을 경우 요청
+            if(!backgroundLocationPermissionGranted) {
+                requestBackgroundLocationPermissions()
+            } else {
+              fetchAirQualityData()
+            }
+
         } else {
-            // fetchData
-            fetchAirQualityData()
+            if(!locationPermissionGranted){
+                finish()
+            } else {
+                // fetchData
+                fetchAirQualityData()
+            }
         }
     }
 
@@ -80,6 +97,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    // 원래대로 라면 foreground 요청을 사용자로부터 받고, 사용자가 앱을 사용하다가
+    // background 관련 기능을 요청 시, background 요청을 받는 것이 맞지만..
+    // 프로젝트 단위에서는 그냥 진행해보는 것으로..
     private fun requestLocationPermissions() {
         ActivityCompat.requestPermissions(
             this,
@@ -88,9 +108,20 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_FINE_LOCATION
             ),
             REQUEST_ACCESS_LOCATION_PERMISSIONS
-
         )
     }
+
+
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun requestBackgroundLocationPermissions() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+            REQUEST_BACKGROUND_ACCESS_LOCATION_PERMISSIONS
+        )
+    }
+
 
     @SuppressLint("MissingPermission")
     private fun fetchAirQualityData() {
@@ -189,6 +220,8 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_ACCESS_LOCATION_PERMISSIONS = 100
+        private const val REQUEST_BACKGROUND_ACCESS_LOCATION_PERMISSIONS = 101
+
     }
 
 }
